@@ -1,10 +1,7 @@
+import ErrorGui from '@/components/custom/ErrorGui';
+
 export const runtime = 'edge';
 
 export default function NotFound() {
-    return (
-        <>
-            <title>404: This page could not be found.</title>
-            <div>404</div>
-        </>
-    );
+    return <ErrorGui errorCode={404} />;
 }

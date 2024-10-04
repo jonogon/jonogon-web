@@ -9,7 +9,7 @@ import {useAuthState} from '@/auth/token-manager';
 import {Button} from '@/components/ui/button';
 import {trpc} from '@/trpc/client';
 import {Share2} from 'lucide-react';
-import {useParams, useRouter, useSearchParams} from 'next/navigation';
+import {notFound, useParams, useRouter, useSearchParams} from 'next/navigation';
 import {useEffect, useState} from 'react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -46,7 +46,6 @@ export default function Petition() {
     });
 
     const {openShareModal} = useSocialShareStore();
-
     const isSubmitted = Boolean(searchParams.get('status') === 'submitted');
 
     const [userVote, setUserVote] = useState(0);
@@ -165,6 +164,21 @@ export default function Petition() {
             await utils.petitions.get.invalidate({id: petition_id});
         },
     });
+
+    if (!isLoading && !petition?.data) {
+        throw notFound();
+    }
+
+    if (
+        !isLoading &&
+        petition?.data.status === 'draft' &&
+        !isAuthenticated &&
+        !isOwnPetition &&
+        !isMod &&
+        !isAdmin
+    ) {
+        throw notFound();
+    }
 
     return isLoading ? (
         <Loading />

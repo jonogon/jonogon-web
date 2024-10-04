@@ -42,11 +42,10 @@ export default function EditPetition() {
 
     const isAuthenticated = useAuthState();
 
-    const {data: selfResponse, isLoading: isLoadingSelf} = trpc.users.getSelf.useQuery(undefined, {
-        enabled: !!isAuthenticated,
-    });
-
-    const freshValue = params.get('fresh');
+    const {data: selfResponse, isLoading: isLoadingSelf} =
+        trpc.users.getSelf.useQuery(undefined, {
+            enabled: !!isAuthenticated,
+        });
 
     const {mutate: updatePetition, isLoading: isPetitionSaving} =
         trpc.petitions.update.useMutation({
@@ -67,6 +66,11 @@ export default function EditPetition() {
         title?: string;
         description?: string;
     }>({});
+
+    const freshValue =
+        params.get('fresh') ||
+        petitionRemoteData?.data === null ||
+        petitionRemoteData?.data === undefined;
 
     const petitionData = {
         target:
@@ -168,7 +172,10 @@ export default function EditPetition() {
         },
     });
 
-    const handleAttachmentUpload = (attachment: { type: 'image' | 'file', file: File }) => {
+    const handleAttachmentUpload = (attachment: {
+        type: 'image' | 'file';
+        file: File;
+    }) => {
         uploadAttachment({
             type: attachment.type,
             file: attachment.file,
@@ -329,8 +336,12 @@ export default function EditPetition() {
                     banglaLabel="ছবি"
                     fileType="image"
                     files={petitionRemoteData?.data?.attachments || []}
-                    onAttachmentsChange={(attachment) => handleAttachmentUpload(attachment)}
-                    removeAttachment={(attachment) => removeAttachment(attachment)}
+                    onAttachmentsChange={(attachment) =>
+                        handleAttachmentUpload(attachment)
+                    }
+                    removeAttachment={(attachment) =>
+                        removeAttachment(attachment)
+                    }
                     petitionId={Number(petition_id)}
                 />
                 <PetitionFileUploader
@@ -338,8 +349,12 @@ export default function EditPetition() {
                     banglaLabel="ফাইল"
                     fileType="file"
                     files={petitionRemoteData?.data?.attachments || []}
-                    onAttachmentsChange={(attachment) => handleAttachmentUpload(attachment)}
-                    removeAttachment={(attachment) => removeAttachment(attachment)}
+                    onAttachmentsChange={(attachment) =>
+                        handleAttachmentUpload(attachment)
+                    }
+                    removeAttachment={(attachment) =>
+                        removeAttachment(attachment)
+                    }
                     petitionId={Number(petition_id)}
                 />
                 <div className="flex flex-col gap-2">

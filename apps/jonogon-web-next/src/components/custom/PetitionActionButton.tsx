@@ -1,9 +1,16 @@
-import {trpc} from '@/trpc/client';
-import {Button} from '../ui/button';
-import {useAuthState} from '@/auth/token-manager';
-import {useRouter} from 'next/navigation';
+'use client';
 
-const PetitionActionButton = () => {
+import {useAuthState} from '@/auth/token-manager';
+import {trpc} from '@/trpc/client';
+import {useRouter} from 'next/navigation';
+import {Button, ButtonProps} from '../ui/button';
+
+interface Props {
+    className?: string;
+    variant?: ButtonProps['variant'];
+}
+
+const PetitionActionButton = (props: Props) => {
     const router = useRouter();
     const authState = useAuthState();
 
@@ -24,7 +31,12 @@ const PetitionActionButton = () => {
     return (
         <Button
             size={'lg'}
-            className={'bg-red-500 font-bold shadow-2xl drop-shadow-xl'}
+            variant={props.variant ?? 'default'}
+            className={
+                props.className
+                    ? props.className
+                    : 'bg-red-500 font-bold shadow-2xl drop-shadow-xl'
+            }
             onClick={handlePetitionCreate}>
             Submit a দাবি
         </Button>
