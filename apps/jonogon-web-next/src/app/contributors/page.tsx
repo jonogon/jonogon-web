@@ -125,9 +125,7 @@ export default function Contributors() {
 						</Collapsible>
 						<div className="flex flex-row gap-4 md:border-t border-white border-opacity-20 py-4">
 							<a
-								href="https://elvista.notion.site/Jonogon-962f56d9d6ea42d3839790c2146b7f6a"
-								target="_blank"
-								rel="noopener noreferrer"
+								href="/faq"
 								className="w-full"
 							>
 								<Button className="w-full bg-[#F7F2EE] bg-opacity-10 text-black hover:text-white font-medium py-4 rounded-md border-2 border-black border-opacity-10">
