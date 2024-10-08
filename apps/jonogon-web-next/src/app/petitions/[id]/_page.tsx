@@ -439,7 +439,7 @@ export default function Petition() {
                             </>
                         ) : (
                             <>
-                                <ThumbsUp size={20} />{' '}
+                                <ThumbsUp size={20} fill={userVote === 1 ? '#000' : userVote === -1 ? '#fff' : '#28c45c' } />{' '}
                                 <p className="ml-2">{upvoteCount}</p>
                             </>
                         )}
@@ -454,7 +454,7 @@ export default function Petition() {
                         className="flex-1 w-full"
                         size={'lg'}
                         onClick={clickThumbsDown}>
-                        <ThumbsDown size={20} />{' '}
+                        <ThumbsDown size={20} fill={ userVote === 0 ? '#e03c3c' : '#fff' />{' '}
                         <p className="ml-2">{downvoteCount}</p>
                     </Button>
                 </div>
