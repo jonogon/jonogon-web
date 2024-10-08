@@ -13,6 +13,8 @@ import {AutoCompleteInput} from '@/components/ui/input-autocomplete';
 import {petitionLocations, petitionTargets} from '@/lib/constants';
 import { useAuthState } from '@/auth/token-manager';
 
+import SimilarPetitionsSuggestions from '@/components/custom/SimilarPetitionsSuggestions';
+
 function storeDraftPetition<T>(data: T) {
     localStorage.setItem('draft-petition', JSON.stringify(data));
 }
@@ -20,6 +22,8 @@ function storeDraftPetition<T>(data: T) {
 export default function EditLoggedOutDraftPetition() {
     const isAuthenticated = useAuthState()
     const [isLoading, setIsLoading] = useState(false);
+
+    const [showSimilarPetitions, setShowSimilarPetitions] = useState(true);
 
     const router = useRouter();
 
@@ -96,6 +100,12 @@ export default function EditLoggedOutDraftPetition() {
                         placeholder="Ex: Make Primary Education Better"
                     />
                 </div>
+                {showSimilarPetitions && (
+                    <SimilarPetitionsSuggestions
+                    title={petitionData.title ?? ''}
+                    onClose={() => setShowSimilarPetitions(false)}
+                    />
+                )}
                 <div className="flex flex-col gap-2">
                     <Label htmlFor="target">
                         <div className={'font-bold text-lg'}>

@@ -7,6 +7,8 @@ import {deriveStatus} from '../../../../../db/model-utils/petition.mjs';
 import {sql} from 'kysely';
 import {jsonArrayFrom} from 'kysely/helpers/postgres';
 import {protectedProcedure} from '../../../middleware/protected.mjs';
+import { removeStopwords, eng, ben } from 'stopword';
+
 
 export const listPetitions = publicProcedure
     .input(
@@ -336,13 +338,13 @@ export const listSuggestedPetitions = protectedProcedure
                     // Calculate the weight based on matching location/target and vote count
                     sql<number>`
                         (
-                            CASE 
+                            CASE
                                 WHEN petitions.formalized_at IS NOT NULL THEN ${FORMALIZED_PETITION_WEIGHT}
-                                WHEN petitions.location = ${input.location} AND petitions.target = ${input.target} 
+                                WHEN petitions.location = ${input.location} AND petitions.target = ${input.target}
                                 THEN ${LOCATION_TARGET_WEIGHT * 2}
-                                WHEN petitions.location = ${input.location} OR petitions.target = ${input.target} 
-                                THEN ${LOCATION_TARGET_WEIGHT} 
-                                ELSE 0 
+                                WHEN petitions.location = ${input.location} OR petitions.target = ${input.target}
+                                THEN ${LOCATION_TARGET_WEIGHT}
+                                ELSE 0
                             END
                             + ${TRENDING_VOTES_WEIGHT} * COUNT(petition_votes.id)
                         )
@@ -393,4 +395,73 @@ export const listSuggestedPetitions = protectedProcedure
                 message: 'An error occurred while fetching suggested petitions',
             });
         }
+    });
+
+export const suggestSimilarPetitions = publicProcedure
+    .input(
+        z.object({
+            title: z.string().min(5),
+        })
+    )
+    .query(async ({input, ctx}) => {
+        const keywords = [...new Set(removeStopwords(
+            input.title.toLowerCase().split(' '),
+            [...eng, ...ben]
+        ).filter((word) => word.length > 2))];
+
+        if (keywords.length < 2) {
+            return { data: [] };
+        }
+
+        const similarPetitions = await ctx.services.postgresQueryBuilder
+            .selectFrom('petitions')
+            .select(['petitions.id', 'petitions.title'])
+            .where('petitions.deleted_at', 'is', null)
+            .where('petitions.approved_at', 'is not', null)
+            .where((eb) =>
+                eb.or(
+                    keywords.map(keyword =>
+                        eb('petitions.title', 'ilike', `%${keyword}%`)
+                    )
+                )
+            )
+            .execute();
+
+        const petitionsWithVotes = await Promise.all(similarPetitions.map(async (petition) => {
+            const upvotes = await ctx.services.postgresQueryBuilder
+                .selectFrom('petition_votes')
+                .select((eb) => eb.fn.count('id').as('count'))
+                .where('petition_id', '=', petition.id)
+                .where('vote', '=', 1)
+                .executeTakeFirst();
+
+            const downvotes = await ctx.services.postgresQueryBuilder
+                .selectFrom('petition_votes')
+                .select((eb) => eb.fn.count('id').as('count'))
+                .where('petition_id', '=', petition.id)
+                .where('vote', '=', -1)
+                .executeTakeFirst();
+
+            return {
+                ...petition,
+                upvotes: Number(upvotes?.count || 0),
+                downvotes: Number(downvotes?.count || 0),
+                match_count: petition.title
+                    ? keywords.filter(keyword =>
+                        petition.title?.toLowerCase().includes(keyword.toLowerCase())
+                    ).length
+                    : 0
+            };
+        }));
+
+        const sortedPetitions = petitionsWithVotes
+            .filter(petition => petition.match_count > 0)
+            .sort((a, b) =>
+                b.match_count - a.match_count ||
+                b.upvotes - a.upvotes ||
+                a.downvotes - b.downvotes
+            )
+            .slice(0, 5);
+
+        return { data: sortedPetitions };
     });

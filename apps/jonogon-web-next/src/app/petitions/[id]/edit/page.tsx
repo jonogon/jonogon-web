@@ -29,6 +29,7 @@ import {
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import PetitionFileUploader from '@/components/custom/PetitionFileUploader';
+import SimilarPetitionsSuggestions from '@/components/custom/SimilarPetitionsSuggestions';
 // import {AutoCompleteInput} from '@/components/ui/input-autocomplete';
 // import {petitionLocations, petitionTargets} from '@/lib/constants';
 
@@ -41,6 +42,8 @@ export default function EditPetition() {
     const router = useRouter();
 
     const isAuthenticated = useAuthState();
+
+    const [showSimilarPetitions, setShowSimilarPetitions] = useState(true);
 
     const {data: selfResponse, isLoading: isLoadingSelf} = trpc.users.getSelf.useQuery(undefined, {
         enabled: !!isAuthenticated,
@@ -284,6 +287,12 @@ export default function EditPetition() {
                         placeholder="Ex: Make Primary Education Better"
                     />
                 </div>
+                {freshValue && showSimilarPetitions && (
+                    <SimilarPetitionsSuggestions
+                    title={petitionData.title ?? ''}
+                    onClose={() => setShowSimilarPetitions(false)}
+                    />
+                )}
                 <div className="flex flex-col gap-2">
                     <Label htmlFor="target">
                         <div className={'font-bold text-lg'}>
