@@ -60,8 +60,11 @@ function Tab({
 
     const updateParams = () => {
         const nextSearchParams = new URLSearchParams(params);
+        const clickedSameType = nextSearchParams.get('type') === null || nextSearchParams.get('type') === type;
         nextSearchParams.set('type', type);
-
+        if (!clickedSameType) {
+            nextSearchParams.delete('page');
+        }
         router.replace('/?' + nextSearchParams.toString());
     };
 
