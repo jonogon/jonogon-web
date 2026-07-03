@@ -92,7 +92,7 @@ services:
         type: volume
 
   redis:
-    image: bitnami/redis:6.2
+    image: soldevelo/redis:6.2
     environment:
       ALLOW_EMPTY_PASSWORD: yes
     ports:
